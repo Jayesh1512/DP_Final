@@ -1,101 +1,122 @@
-import Image from "next/image";
+'use client'
+import { useState, useEffect } from 'react'
+import { Bold, Italic, Underline, List, AlignLeft, AlignCenter, AlignRight } from 'lucide-react'
 
-export default function Home() {
+export default function TextEditor() {
+  const [text, setText] = useState('')
+  const [versions, setVersions] = useState([{ id: 1, timestamp: new Date().toISOString(), content: '' }])
+  const [currentVersion, setCurrentVersion] = useState(1)
+
+  const saveVersion = async () => {
+    const newVersion = {
+      id: versions.length + 1,
+      timestamp: new Date().toISOString(), // Store timestamp as ISO string
+      content: text
+    }
+    setVersions((prevVersions) => [...prevVersions, newVersion])
+    setCurrentVersion(newVersion.id)
+
+    // Prepare data to save in input.txt format
+    const logEntry = `commit Version_${newVersion.id} ${text.replace(/\n/g, ' ')}\n`;
+
+    // Send a request to the API to save the log entry
+    try {
+      const response = await fetch('/api/saveVersion', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ data: logEntry }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save version');
+      }
+
+      console.log('Version saved successfully');
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  }
+
+  const loadVersion = (id) => {
+    const version = versions.find(v => v.id === id)
+    if (version) {
+      setText(version.content)
+      setCurrentVersion(id)
+    }
+  }
+
+  const formatText = (command) => {
+    document.execCommand(command, false, null);
+  }
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.js
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <div className="flex h-screen bg-gray-100">
+      {/* Sidebar */}
+      <div className="w-64 bg-white border-r">
+        <div className="p-4">
+          <h2 className="text-lg font-semibold mb-4">Version History</h2>
+          <div className="h-[calc(100vh-8rem)] overflow-y-auto">
+            {versions.map((version) => (
+              <button
+                key={version.id}
+                className={`w-full text-left mb-2 px-3 py-2 rounded ${
+                  currentVersion === version.id ? 'bg-gray-200' : 'hover:bg-gray-100'
+                }`}
+                onClick={() => loadVersion(version.id)}
+              >
+                Version {version.id}
+                <span className="ml-2 text-xs text-gray-500">
+                  {new Date(version.timestamp).toLocaleString('en-US', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                    hour12: false
+                  })}
+                </span>
+              </button>
+            ))}
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+      </div>
+
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col">
+        {/* Toolbar */}
+        <div className="bg-white border-b p-2 flex items-center space-x-2">
+          <button className="p-1 hover:bg-gray-100 rounded" onClick={() => formatText('bold')}><Bold className="h-4 w-4" /></button>
+          <button className="p-1 hover:bg-gray-100 rounded" onClick={() => formatText('italic')}><Italic className="h-4 w-4" /></button>
+          <button className="p-1 hover:bg-gray-100 rounded" onClick={() => formatText('underline')}><Underline className="h-4 w-4" /></button>
+          <button className="p-1 hover:bg-gray-100 rounded" onClick={() => formatText('insertUnorderedList')}><List className="h-4 w-4" /></button>
+          <button className="p-1 hover:bg-gray-100 rounded" onClick={() => formatText('justifyLeft')}><AlignLeft className="h-4 w-4" /></button>
+          <button className="p-1 hover:bg-gray-100 rounded" onClick={() => formatText('justifyCenter')}><AlignCenter className="h-4 w-4" /></button>
+          <button className="p-1 hover:bg-gray-100 rounded" onClick={() => formatText('justifyRight')}><AlignRight className="h-4 w-4" /></button>
+          <input
+            type="text"
+            className="max-w-sm ml-auto px-3 py-1 border rounded"
+            placeholder="Document Title"
           />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+          <button
+            className="px-4 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+            onClick={saveVersion}
+          >
+            Save Version
+          </button>
+        </div>
+
+        {/* Editor */}
+        <div
+          className="flex-1 p-4 text-lg resize-none border rounded"
+          contentEditable
+          suppressContentEditableWarning={true} // Prevent React warning
+          onInput={(e) => setText(e.currentTarget.innerHTML)} // Capture the content
+          dangerouslySetInnerHTML={{ __html: text }} // Set inner HTML for formatting
+        />
+      </div>
     </div>
-  );
+  )
 }

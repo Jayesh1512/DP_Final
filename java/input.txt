@@ -1,0 +1,6 @@
+commit Initial_commit Heloo
+commit Feature_added Hellooooo_DPPPPP
+checkout 0
+commit Feature_added Changesss
+checkout 1
+log

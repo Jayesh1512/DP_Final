@@ -1,0 +1,17 @@
+Executing commit command
+Created: Commit{message='Initial_commit', data='Heloo'}
+Executing commit command
+Created: Commit{message='Feature_added', data='Hellooooo_DPPPPP'}
+Executing checkout command
+Checked out to: Commit{message='Initial_commit', data='Heloo'}
+Executing commit command
+Created: Commit{message='Feature_added', data='Changesss'}
+Executing checkout command
+Checked out to: Commit{message='Feature_added', data='Hellooooo_DPPPPP'}
+Executing log command
+Commit Log:
+0: Commit{message='Initial_commit', data='Heloo'}
+1: Commit{message='Feature_added', data='Hellooooo_DPPPPP'}
+2: Commit{message='Feature_added', data='Changesss'}
+Important Commit: [IMPORTANT] Commit{message='Decorator test commit', data='Data2'}
+Tagged Commit: Commit{message='Decorator test commit', data='Data2'} [Tag: v1.0]

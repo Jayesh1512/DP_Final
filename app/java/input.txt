@@ -1,0 +1,6 @@
+commit Initial_commit This_is_the_initial_data_for_commit
+commit Feature_added Added_feature_data
+checkout 0
+commit Bug_fix Fixed_bug_in_the_system
+checkout 1
+log
